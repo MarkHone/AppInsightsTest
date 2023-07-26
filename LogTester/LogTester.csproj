@@ -51,7 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AppInsightsTest\AppInsightsTest.csproj">
-      <Project>{99f1613b-92a3-4bf2-8e0f-25e2b7c0b606}</Project>
+      <Project>{99F1613B-92A3-4BF2-8E0F-25E2B7C0B606}</Project>
       <Name>AppInsightsTest</Name>
     </ProjectReference>
   </ItemGroup>

@@ -32,8 +32,6 @@ namespace AppInsightsTest
             _logger = _host.Services.GetRequiredService<ILogger<AppInsightsTest>>();
             _logger.LogInformation($"Starting logging for : {Assembly.GetExecutingAssembly().GetName().Name ?? string.Empty}, environment: {environment}.");
             _logger.LogInformation($"Application Insights Instrumentation Key: {_telemetryConfiguration.InstrumentationKey}");
-
-            ShutDownApplication();
         }
 
         public static void ShutDownApplication()
