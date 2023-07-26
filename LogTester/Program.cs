@@ -1,13 +1,13 @@
-﻿using AppInsightsTest;
+﻿using Startup = AppInsightsTest.Startup;//AppInsightsTest_Static.Startup;
 
 namespace LogTester
 {
-    public class Program
+    internal class Program
     {
         static void Main(string[] args)
         {
             Startup.StartupApplication();
-            Startup.ShutDownApplication();            
+            Startup.ShutDownApplication();
         }
     }
 }
