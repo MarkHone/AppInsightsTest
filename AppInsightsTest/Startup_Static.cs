@@ -19,14 +19,14 @@ namespace AppInsightsTest_Static
 
         private static string GetTelemetryConnectionString() => "[INSERT_CONNECTION_STRING_HERE]";
 
-        public static void StartupApplication()
+        public static void StartupApplication_Static()
         {
             string environment = Environment.GetEnvironmentVariable("Environment") ?? "<UNSET>";
             LogInformation($"Starting logging for : {Assembly.GetExecutingAssembly().GetName().Name ?? string.Empty}, environment: {environment}.");
             LogInformation($"Application Insights Instrumentation Key: {_telemetryConfiguration.InstrumentationKey}");
         }
 
-        public static void ShutDownApplication()
+        public static void ShutDownApplication_Static()
         {
             LogInformation("Application shutting down.");
             // Explicitly call Flush() followed by sleep is required in console apps.
