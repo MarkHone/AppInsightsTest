@@ -1,4 +1,4 @@
-﻿using AppInsightsTest;
+﻿using Startup = AppInsightsTest.Startup;//AppInsightsTest_Static.Startup;
 
 namespace LogTester
 {
@@ -7,6 +7,7 @@ namespace LogTester
         static void Main(string[] args)
         {
             Startup.StartupApplication();
+            Startup.ShutDownApplication();
         }
     }
 }
