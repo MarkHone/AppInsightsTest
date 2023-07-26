@@ -1,5 +1,4 @@
 ﻿using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -17,7 +17,7 @@ namespace AppInsightsTest
     public static class Startup
     {
         private static readonly IHost _host;
-        private static InMemoryChannel _channel;
+        private static string _appName;
         private static ILogger<AppInsightsTest> _logger;
         private static TelemetryConfiguration _telemetryConfiguration;
         private static TelemetryClient _telemetryClient;
@@ -30,31 +30,30 @@ namespace AppInsightsTest
         {
             string environment = Environment.GetEnvironmentVariable("Environment") ?? "<UNSET>";
             _logger = _host.Services.GetRequiredService<ILogger<AppInsightsTest>>();
-            _logger.LogInformation($"Starting logging for : {Assembly.GetExecutingAssembly().GetName().Name ?? string.Empty}, environment: {environment}.");
+            _logger.LogInformation($"Starting logging for: {_appName}, environment: {environment}.");
             _logger.LogInformation($"Application Insights Instrumentation Key: {_telemetryConfiguration.InstrumentationKey}");
         }
 
         public static void ShutDownApplication()
         {
             _logger?.LogInformation("Application shutting down.");
-            _channel.Flush();
             _telemetryClient?.Flush();
             Log.CloseAndFlush();
             Task.Delay(3500).Wait();
-            _channel.Dispose();
         }
 
         private static IHost BuildHost()
         {
+            // When run from Excel-DNA, the security protocol appears to be downgraded to TLS 1.0 so this forces it to use TLS 1.2
+            // https://stackoverflow.com/questions/2582036/an-existing-connection-was-forcibly-closed-by-the-remote-host
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             try
             {
                 var builder = Host.CreateDefaultBuilder();
                 builder.ConfigureServices((context, services) =>
                 {
-                    _channel = new InMemoryChannel();
                     FunctionLoggerConfig = GetFunctionLoggerConfig(context.Configuration);
-                    services.Configure<TelemetryConfiguration>(config => config.TelemetryChannel = _channel);
                 });
                 
                 builder.ConfigureLogging((context, loggingBuilder) =>
@@ -98,8 +97,10 @@ namespace AppInsightsTest
         
         private static void GetSerilogConfig(LoggerConfiguration loggerConfig, IConfiguration appConfig)
         {
+            _appName = (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).GetName().Name ?? string.Empty;
             loggerConfig.ReadFrom.Configuration(appConfig);
-            loggerConfig.Enrich.WithProperty("ApplicationName", Assembly.GetExecutingAssembly().GetName().Name ?? string.Empty);
+            loggerConfig.Enrich.WithProperty("MachineName", Environment.MachineName);
+            loggerConfig.Enrich.WithProperty("ApplicationName", _appName);
             loggerConfig.Enrich.WithProperty("UserName", Environment.UserName);
 
             if (FunctionLoggerConfig.IsLogToFile)
